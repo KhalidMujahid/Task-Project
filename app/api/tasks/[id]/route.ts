@@ -1,3 +1,4 @@
+import { NextResponse } from "next/server";
 import { connectDB } from "@/configs/db";
 import Task from "@/models/Task";
 
@@ -9,9 +10,17 @@ export async function PUT(
     await connectDB();
     const update = await req.json();
     const task = await Task.findByIdAndUpdate(params.id, update, { new: true });
-    return Response.json(task);
+
+    if (!task) {
+      return new NextResponse(JSON.stringify({ error: "Task not found" }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    return NextResponse.json(task);
   } catch (e) {
-    return new Response(JSON.stringify({ error: (e as Error).message }), {
+    return new NextResponse(JSON.stringify({ error: (e as Error).message }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });
